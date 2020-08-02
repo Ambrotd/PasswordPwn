@@ -28,7 +28,6 @@ class bColors:
 
 API_URL = 'https://api.pwnedpasswords.com/range/'
 
-
 def passwd_api_check(password):
     sha1 = hashlib.sha1(password.encode('utf-8')).hexdigest().upper()
     hash_to_api, hash_to_check = sha1[0:5], sha1[5:]
@@ -41,7 +40,6 @@ def passwd_api_check(password):
         if h == hash_to_check:
             return count
     return 0
-
 
 def main():
 
@@ -82,10 +80,8 @@ def main():
         if count != 0:
             print(
                 f'{bColors.WARNING}Your password {bColors.RED}{args.passwords}{bColors.WARNING} has been leaked {bColors.RED}{count}{bColors.WARNING} times{bColors.ENDC}')
-
         else:
             print(f'{bColors.GREEN}Your password {bColors.WARNING}{args.passwords}{bColors.GREEN} has not been compromised yet!{bColors.ENDC}')
-
 
 if __name__ == '__main__':
     sys.exit(main())
