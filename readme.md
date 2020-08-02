@@ -18,5 +18,6 @@ And it should be ready to use.
 
 ### Usage
 
-It accept one or more passwords using the parameter -p or --passwords
+It accepts one or more passwords using the parameter -p or --passwords
+
 Example: ``python3 PasswdPwn.py -p mypass1 mypass2``
