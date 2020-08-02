@@ -72,7 +72,6 @@ def main():
 
     if type(args.passwords) == list:
         for password in args.passwords:
-            # print(password)
             count = passwd_api_check(password)
             if count != 0:
                 print(f'{bColors.WARNING}Your password {bColors.RED}{password}{bColors.WARNING} has been leaked {bColors.RED}{count}{bColors.WARNING} times{bColors.ENDC}')
