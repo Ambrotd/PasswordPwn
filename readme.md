@@ -10,9 +10,9 @@ In summary your password never leave your computer so it is safe to use, just re
 
 ### Installation
 
-1.Clone the repo with ``git clone https://github.com/Ambrotd/PasswordPwn.git``
-2.Get in the PasswordPwn directory ``cd PasswdPwn``
-3.Install the requirements ``pip3 install -r requirements.txt``
+1. Clone the repo with ``git clone https://github.com/Ambrotd/PasswordPwn.git``
+2. Get in the PasswordPwn directory ``cd PasswdPwn``
+3. Install the requirements ``pip3 install -r requirements.txt``
 
 And it should be ready to use.
 
