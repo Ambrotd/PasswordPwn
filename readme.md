@@ -17,7 +17,19 @@ In summary your password never leave your computer so it is safe to use, just re
 And it should be ready to use.
 
 ### Usage
-
+#### Password checking
 It accepts one or more passwords using the parameter -p or --passwords
 
 Example: ``python3 PasswdPwn.py -p mypass1 mypass2``
+
+#### Email checking
+It accepts one or more emails using the parameter -e or --email. 
+- Check your username against all the domains:
+``python3 PasswdPwn.py -e username``
+
+- Check your domain for leaks:
+``python3 PasswdPwn.py -e @domain.xyz``
+
+- Check the complete email:
+``python3 PasswdPwn.py -e username@domain.xyz``
+
