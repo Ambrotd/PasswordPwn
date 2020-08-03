@@ -4,6 +4,7 @@ import sys
 import argparse
 import re
 import platform
+import os
 
 '''
 Using GET https://api.pwnedpasswords.com/range/{first 5 hash chars} the k-model allows anonymity as the full hash is not getting
@@ -55,6 +56,11 @@ system = platform.system()
 col = Color(system)
 API_URL = 'https://api.pwnedpasswords.com/range/'
 
+def clean():
+    if system == "Windows":
+        os.system("cls")
+    if system  == "Linux":
+        os.system("clear")
 
 def passwd_api_check(password):
     sha1 = hashlib.sha1(password.encode('utf-8')).hexdigest().upper()
@@ -175,4 +181,5 @@ def main():
 
 
 if __name__ == '__main__':
+    clean()
     sys.exit(main())
