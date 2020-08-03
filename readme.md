@@ -2,7 +2,7 @@
 
 ### Description
 
-The program checks against the haveIbeenPwn API is your password have been leaked.
+The program checks against the haveIbeenPwn API if your password has been leaked.
 It is secure because the password is hashed locally and only the first 5 hex characters of the hash are sent to the API.
 The results are compared locally with the full hash.
 
