@@ -2,6 +2,7 @@ import requests
 import hashlib
 import sys
 import argparse
+import re
 
 '''
 Using GET https://api.pwnedpasswords.com/range/{first 5 hash chars} the k-model allows anonymity as the full hash is not getting
@@ -42,6 +43,44 @@ def passwd_api_check(password):
             return count
     return 0
 
+def email_tor_check(email):
+    url = 'http://pwndb2am4tzkvold.onion.ws'
+    if '@' in email:
+        user = email.split('@')[0]
+        domain = email.split('@')[1]
+    else:
+        user = email
+        domain = '%'
+    if len(user) == 0:
+        user = '%'
+
+    data = {'luser': user, 'domain': domain, 'luseropr' : 1,'domainopr': 1,'submitform': 'em'}
+    r = requests.post(url, data=data)
+    if r.status_code != 200:
+        raise RuntimeError(f'Service is down, error {r.status_code}; Check the service')
+    response = r.text
+    if 'Array' not in response:
+        return 0
+    leaked_data = response.split("Array")[2:]
+    email_list = []
+    for i in leaked_data:
+        luser = ''
+        ldomain = ''
+        lpassword = ''
+        lemail = ''
+        luser = re.search(r'(?<=luser] => )[^\s]*', i).group(0)
+        ldomain = re.search(r'(?<=domain] => )[^\s]*', i).group(0)
+        lpassword = re.search(r'(?<=password] => )[^\s]*', i).group(0)
+        email = f'{luser}@{ldomain}'
+        if luser:
+            email_list.append({"email": email, "passwd": lpassword})
+    return email_list
+
+def print_leaks(email_list):
+    for dic in email_list:
+        print(f'The email {bColors.WARNING}[+]->> {bColors.RED}{dic["email"]}{bColors.ENDC} has been leaked with the '
+              f'password {bColors.WARNING}[+]--> {bColors.RED}{dic["passwd"]}{bColors.ENDC}')
+
 
 def main():
 
@@ -57,13 +96,16 @@ def main():
 888        888  888      X88      X88 Y88b 888 d88P Y88b 888 888        8888P   Y8888 888   Y8888 
 888        "Y888888  88888P'  88888P'  "Y8888888P"   "Y88888 888        888P     Y888 888    Y888 
                                                                                                   
-            {}Check if your passwd has been leaked without compromising it{}
+            {}Check if your passwd or email have been leaked without compromising them{}
                                 By {}Ambrotd{}
     
     '''.format(bColors.WARNING, bColors.ENDC, bColors.RED, bColors.ENDC)
     print(f'{bColors.OKBLUE}{banner}{bColors.ENDC}')
     parser.add_argument("-p", "--passwords", nargs='+', type=str, dest='passwords',
                         help="Insert the passwords to check separated by space")
+    parser.add_argument("-e", "--email", nargs='+', type=str, dest='emails',
+                        help="Insert the emails to check separated by space."
+                             " It can check just the username, the complete email or your domain with @domain.xyz")
     args = parser.parse_args()
 
     if len(sys.argv) == 1:
@@ -77,7 +119,7 @@ def main():
                 print(f'{bColors.WARNING}Your password {bColors.RED}{password}{bColors.WARNING} has been leaked {bColors.RED}{count}{bColors.WARNING} times{bColors.ENDC}')
             else:
                 print(f'{bColors.GREEN}Your password {bColors.WARNING}{password}{bColors.GREEN} has not been compromised yet!{bColors.ENDC}')
-    else:
+    elif args.passwords:
         count = passwd_api_check(args.passwords)
         if count != 0:
             print(
@@ -85,6 +127,19 @@ def main():
 
         else:
             print(f'{bColors.GREEN}Your password {bColors.WARNING}{args.passwords}{bColors.GREEN} has not been compromised yet!{bColors.ENDC}')
+    if type(args.emails) == list:
+        for email in args.emails:
+            leaks = email_tor_check(email)
+            if leaks:
+                print_leaks(leaks)
+            else:
+                print(f'The email {bColors.WARNING}[+]->> {bColors.GREEN}{email}{bColors.ENDC} {bColors.CYAN}It\'s safe no leaks found!{bColors.ENDC}')
+    elif args.emails:
+        leaks = email_tor_check(args.emails)
+        if leaks:
+            print_leaks(leaks)
+        else:
+            print(f'The email {bColors.WARNING}[+]->> {bColors.GREEN}{args.emails}{bColors.ENDC} {bColors.CYAN}It\'s safe no leaks found!{bColors.ENDC}')
 
 
 if __name__ == '__main__':
