@@ -3,30 +3,56 @@ import hashlib
 import sys
 import argparse
 import re
+import platform
 
 '''
 Using GET https://api.pwnedpasswords.com/range/{first 5 hash chars} the k-model allows anonymity as the full hash is not getting
 out of your computer
 '''
-class bColors:
-    HEADER = '\033[95m'
-    OKBLUE = '\033[94m'
-    OKGREEN = '\033[92m'
-    WARNING = '\033[93m'
-    FAIL = '\033[91m'
-    ENDC = '\033[0m'
-    BOLD = '\033[1m'
-    UNDERLINE = '\033[4m'
-    BLACK = '\u001b[30m'
-    RED = '\u001b[31m'
-    GREEN = '\u001b[32m'
-    YELLOW = '\u001b[33m'
-    BLUE = '\u001b[34m'
-    MAGENTA = '\u001b[35m'
-    CYAN = '\u001b[36m'
-    WHITE = '\u001b[37m'
-    RESET = '\u001b[0m'
 
+
+class Color:
+    def __init__(self, system):
+        if system == "Windows":
+            self.HEADER = ''
+            self.OKBLUE = ''
+            self.OKGREEN = ''
+            self.WARNING = ''
+            self.FAIL = ''
+            self.ENDC = ''
+            self.BOLD = ''
+            self.UNDERLINE = ''
+            self.BLACK = ''
+            self.RED = ''
+            self.GREEN = ''
+            self.YELLOW = ''
+            self.BLUE = ''
+            self.MAGENTA = ''
+            self.CYAN = ''
+            self.WHITE = ''
+            self.RESET = ''
+        else:
+            self.HEADER = '\033[95m'
+            self.OKBLUE = '\033[94m'
+            self.OKGREEN = '\033[92m'
+            self.WARNING = '\033[93m'
+            self.FAIL = '\033[91m'
+            self.ENDC = '\033[0m'
+            self.BOLD = '\033[1m'
+            self.UNDERLINE = '\033[4m'
+            self.BLACK = '\u001b[30m'
+            self.RED = '\u001b[31m'
+            self.GREEN = '\u001b[32m'
+            self.YELLOW = '\u001b[33m'
+            self.BLUE = '\u001b[34m'
+            self.MAGENTA = '\u001b[35m'
+            self.CYAN = '\u001b[36m'
+            self.WHITE = '\u001b[37m'
+            self.RESET = '\u001b[0m'
+
+
+system = platform.system()
+col = Color(system)
 API_URL = 'https://api.pwnedpasswords.com/range/'
 
 
@@ -43,6 +69,7 @@ def passwd_api_check(password):
             return count
     return 0
 
+
 def email_tor_check(email):
     url = 'http://pwndb2am4tzkvold.onion.ws'
     if '@' in email:
@@ -54,7 +81,7 @@ def email_tor_check(email):
     if len(user) == 0:
         user = '%'
 
-    data = {'luser': user, 'domain': domain, 'luseropr' : 1,'domainopr': 1,'submitform': 'em'}
+    data = {'luser': user, 'domain': domain, 'luseropr': 1, 'domainopr': 1, 'submitform': 'em'}
     r = requests.post(url, data=data)
     if r.status_code != 200:
         raise RuntimeError(f'Service is down, error {r.status_code}; Check the service')
@@ -76,14 +103,14 @@ def email_tor_check(email):
             email_list.append({"email": email, "passwd": lpassword})
     return email_list
 
+
 def print_leaks(email_list):
     for dic in email_list:
-        print(f'The email {bColors.WARNING}[+]->> {bColors.RED}{dic["email"]}{bColors.ENDC} has been leaked with the '
-              f'password {bColors.WARNING}[+]--> {bColors.RED}{dic["passwd"]}{bColors.ENDC}')
+        print(f'The email {col.WARNING}[+]->> {col.RED}{dic["email"]}{col.ENDC} has been leaked with the '
+              f'password {col.WARNING}[+]--> {col.RED}{dic["passwd"]}{col.ENDC}')
 
 
 def main():
-
     parser = argparse.ArgumentParser()
     banner = ''' 
 
@@ -99,8 +126,8 @@ def main():
             {}Check if your passwd or email have been leaked without compromising them{}
                                 By {}Ambrotd{}
     
-    '''.format(bColors.WARNING, bColors.ENDC, bColors.RED, bColors.ENDC)
-    print(f'{bColors.OKBLUE}{banner}{bColors.ENDC}')
+    '''.format(col.WARNING, col.ENDC, col.RED, col.ENDC)
+    print(f'{col.OKBLUE}{banner}{col.ENDC}')
     parser.add_argument("-p", "--passwords", nargs='+', type=str, dest='passwords',
                         help="Insert the passwords to check separated by space")
     parser.add_argument("-e", "--email", nargs='+', type=str, dest='emails',
@@ -116,30 +143,35 @@ def main():
         for password in args.passwords:
             count = passwd_api_check(password)
             if count != 0:
-                print(f'{bColors.WARNING}Your password {bColors.RED}{password}{bColors.WARNING} has been leaked {bColors.RED}{count}{bColors.WARNING} times{bColors.ENDC}')
+                print(
+                    f'{col.WARNING}Your password {col.RED}{password}{col.WARNING} has been leaked {col.RED}{count}{col.WARNING} times{col.ENDC}')
             else:
-                print(f'{bColors.GREEN}Your password {bColors.WARNING}{password}{bColors.GREEN} has not been compromised yet!{bColors.ENDC}')
+                print(
+                    f'{col.GREEN}Your password {col.WARNING}{password}{col.GREEN} has not been compromised yet!{col.ENDC}')
     elif args.passwords:
         count = passwd_api_check(args.passwords)
         if count != 0:
             print(
-                f'{bColors.WARNING}Your password {bColors.RED}{args.passwords}{bColors.WARNING} has been leaked {bColors.RED}{count}{bColors.WARNING} times{bColors.ENDC}')
+                f'{col.WARNING}Your password {col.RED}{args.passwords}{col.WARNING} has been leaked {col.RED}{count}{col.WARNING} times{col.ENDC}')
 
         else:
-            print(f'{bColors.GREEN}Your password {bColors.WARNING}{args.passwords}{bColors.GREEN} has not been compromised yet!{bColors.ENDC}')
+            print(
+                f'{col.GREEN}Your password {col.WARNING}{args.passwords}{col.GREEN} has not been compromised yet!{col.ENDC}')
     if type(args.emails) == list:
         for email in args.emails:
             leaks = email_tor_check(email)
             if leaks:
                 print_leaks(leaks)
             else:
-                print(f'The email {bColors.WARNING}[+]->> {bColors.GREEN}{email}{bColors.ENDC} {bColors.CYAN}It\'s safe no leaks found!{bColors.ENDC}')
+                print(
+                    f'The email {col.WARNING}[+]->> {col.GREEN}{email}{col.ENDC} {col.CYAN}It\'s safe no leaks found!{col.ENDC}')
     elif args.emails:
         leaks = email_tor_check(args.emails)
         if leaks:
             print_leaks(leaks)
         else:
-            print(f'The email {bColors.WARNING}[+]->> {bColors.GREEN}{args.emails}{bColors.ENDC} {bColors.CYAN}It\'s safe no leaks found!{bColors.ENDC}')
+            print(
+                f'The email {col.WARNING}[+]->> {col.GREEN}{args.emails}{col.ENDC} {col.CYAN}It\'s safe no leaks found!{col.ENDC}')
 
 
 if __name__ == '__main__':
