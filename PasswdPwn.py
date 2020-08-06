@@ -6,15 +6,13 @@ import re
 import platform
 import os
 
-'''
-Using GET https://api.pwnedpasswords.com/range/{first 5 hash chars} the k-model allows anonymity as the full hash is not getting
-out of your computer
-'''
+'''Using GET https://api.pwnedpasswords.com/range/{first 5 hash chars} the k-model allows anonymity as the full hash 
+is not getting out of your computer '''
 
 
 class Color:
-    def __init__(self, system):
-        if system == "Windows":
+    def __init__(self, system_type):
+        if system_type == "Windows":
             self.HEADER = ''
             self.OKBLUE = ''
             self.OKGREEN = ''
@@ -112,13 +110,17 @@ def email_tor_check(email):
     return email_list
 
 
-def print_leaks(email_list):
-    for dic in email_list:
-        print(f'The email {col.WARNING}[+]->> {col.RED}{dic["email"]}{col.ENDC} has been leaked with the '
-              f'password {col.WARNING}[+]--> {col.RED}{dic["passwd"]}{col.ENDC}')
+def print_leaks(email_list, email_base):
+    if email_list:
+        for dic in email_list:
+            print(f'The email {col.WARNING}[+]->> {col.RED}{dic["email"]}{col.ENDC} has been leaked with the '
+                  f'password {col.WARNING}[+]--> {col.RED}{dic["passwd"]}{col.ENDC}')
+    else:
+        print(
+            f'The email {col.WARNING}[+]->> {col.GREEN}{email_base}{col.ENDC} {col.CYAN}It\'s safe no leaks found!{col.ENDC}')
 
 
-def print_passwd(count,password):
+def print_passwd(count, password):
     if count != 0:
         print(
             f'{col.WARNING}Your password {col.RED}{password}{col.WARNING} has been leaked {col.RED}{count}{col.WARNING} times{col.ENDC}')
@@ -158,26 +160,17 @@ def main():
 
     if type(args.passwords) == list:
         for password in args.passwords:
-            print_passwd(passwd_api_check(password),password)
+            print_passwd(passwd_api_check(password), password)
 
     elif args.passwords:
-        print_passwd(passwd_api_check(args.passwords),args.passwords)
+        print_passwd(passwd_api_check(args.passwords), args.passwords)
 
     if type(args.emails) == list:
         for email in args.emails:
-            leaks = email_tor_check(email)
-            if leaks:
-                print_leaks(leaks)
-            else:
-                print(
-                    f'The email {col.WARNING}[+]->> {col.GREEN}{email}{col.ENDC} {col.CYAN}It\'s safe no leaks found!{col.ENDC}')
+            print_leaks(email_tor_check(email), email)
+
     elif args.emails:
-        leaks = email_tor_check(args.emails)
-        if leaks:
-            print_leaks(leaks)
-        else:
-            print(
-                f'The email {col.WARNING}[+]->> {col.GREEN}{args.emails}{col.ENDC} {col.CYAN}It\'s safe no leaks found!{col.ENDC}')
+        print_leaks(email_tor_check(args.emails), args.emails)
 
 
 if __name__ == '__main__':
