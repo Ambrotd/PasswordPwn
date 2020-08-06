@@ -56,11 +56,13 @@ system = platform.system()
 col = Color(system)
 API_URL = 'https://api.pwnedpasswords.com/range/'
 
+
 def clean():
     if system == "Windows":
         os.system("cls")
-    if system  == "Linux":
+    if system == "Linux":
         os.system("clear")
+
 
 def passwd_api_check(password):
     sha1 = hashlib.sha1(password.encode('utf-8')).hexdigest().upper()
@@ -116,6 +118,15 @@ def print_leaks(email_list):
               f'password {col.WARNING}[+]--> {col.RED}{dic["passwd"]}{col.ENDC}')
 
 
+def print_passwd(count,password):
+    if count != 0:
+        print(
+            f'{col.WARNING}Your password {col.RED}{password}{col.WARNING} has been leaked {col.RED}{count}{col.WARNING} times{col.ENDC}')
+    else:
+        print(
+            f'{col.GREEN}Your password {col.WARNING}{password}{col.GREEN} has not been compromised yet!{col.ENDC}')
+
+
 def main():
     parser = argparse.ArgumentParser()
     banner = ''' 
@@ -147,22 +158,11 @@ def main():
 
     if type(args.passwords) == list:
         for password in args.passwords:
-            count = passwd_api_check(password)
-            if count != 0:
-                print(
-                    f'{col.WARNING}Your password {col.RED}{password}{col.WARNING} has been leaked {col.RED}{count}{col.WARNING} times{col.ENDC}')
-            else:
-                print(
-                    f'{col.GREEN}Your password {col.WARNING}{password}{col.GREEN} has not been compromised yet!{col.ENDC}')
-    elif args.passwords:
-        count = passwd_api_check(args.passwords)
-        if count != 0:
-            print(
-                f'{col.WARNING}Your password {col.RED}{args.passwords}{col.WARNING} has been leaked {col.RED}{count}{col.WARNING} times{col.ENDC}')
+            print_passwd(passwd_api_check(password),password)
 
-        else:
-            print(
-                f'{col.GREEN}Your password {col.WARNING}{args.passwords}{col.GREEN} has not been compromised yet!{col.ENDC}')
+    elif args.passwords:
+        print_passwd(passwd_api_check(args.passwords),args.passwords)
+
     if type(args.emails) == list:
         for email in args.emails:
             leaks = email_tor_check(email)
