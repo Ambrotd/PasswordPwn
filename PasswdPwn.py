@@ -165,7 +165,7 @@ def get_proxy_list():
 
 
 def check_firefox(email_in, proxy_list=[], hidden=0):
-    regex = '^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w{2,3}$'
+    regex = '^[a-z0-9.]+[\._]?[a-z0-9]+[@]\w+[.]\w{2,3}$'
     email = re.match(regex, email_in)
     if email:
         email = email.group(0)
