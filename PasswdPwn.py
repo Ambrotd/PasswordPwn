@@ -154,7 +154,7 @@ def print_pass_leaks(email_list, email_base):
             password = dic['fields'].get("password", "NoPass")
             hash_pass = dic['fields'].get("passhash", "NoHash")
             domain = dic['fields'].get("domain", "NoDomain")
-            print(f'The email {col.WARNING}[+]->> {col.RED}{dic["fields"]["email"]}{col.ENDC} has been leaked')
+            print(f'The email {col.WARNING}[+]->> {col.RED}{dic["fields"]["email"]}{col.ENDC} has been leaked:')
             if password != "NoPass":
                 print(f"\tpassword {col.WARNING}[+]--> {col.RED}{password}{col.ENDC}")
             if hash_pass != "NoHash":
