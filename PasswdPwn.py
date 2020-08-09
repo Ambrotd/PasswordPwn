@@ -134,7 +134,7 @@ def check_firefox(email_in, hidden=0):
             print(f"{col.FAIL}Too many request to firefox from that IP Address try using a proxy or VPN")
 
     else:
-        print("Database breach by name in firefox records is only available for complete email search. Try again with the full email"
+        print("Database breach by name in firefox records is only available for complete email search. Try again with the full email "
               "ex:username@domain.xyz")
 
 
