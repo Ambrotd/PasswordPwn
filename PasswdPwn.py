@@ -6,7 +6,7 @@ import re
 import platform
 import os
 from bs4 import BeautifulSoup
-import random
+
 
 '''Using GET https://api.pwnedpasswords.com/range/{first 5 hash chars} the k-model allows anonymity as the full hash 
 is not getting out of your computer '''
@@ -82,44 +82,6 @@ def passwd_api_check(password):
     return 0
 
 
-def email_tor_check(email):
-    url = 'http://pwndb2am4tzkvold.onion.ws'
-    email_list = []
-    if '@' in email:
-        user = email.split('@')[0]
-        domain = email.split('@')[1]
-    else:
-        user = email
-        domain = '%'
-    if len(user) == 0:
-        user = '%'
-
-    data = {'luser': user, 'domain': domain, 'luseropr': 1, 'domainopr': 1, 'submitform': 'em'}
-    try:
-        r = requests.post(url, timeout=10, data=data)
-        if r.status_code != 200:
-            raise RuntimeError(f'Service is down, error {r.status_code}; Check the service')
-    except:
-        print(f"{col.WARNING}The onion service is down we cannot check cleartext passwords now for email: {email}")
-        return 0
-    response = r.text
-    if 'Array' not in response:
-        return 0
-    leaked_data = response.split("Array")[2:]
-    for i in leaked_data:
-        # luser = ''
-        # ldomain = ''
-        # lpassword = ''
-        # lemail = ''
-        luser = re.search(r'(?<=luser] => )[^\s]*', i).group(0)
-        ldomain = re.search(r'(?<=domain] => )[^\s]*', i).group(0)
-        lpassword = re.search(r'(?<=password] => )[^\s]*', i).group(0)
-        email = f'{luser}@{ldomain}'
-        if luser:
-            email_list.append({"email": email, "passwd": lpassword})
-    return print_leaks(email_list, email)
-
-
 def print_leaks(email_list, email_base):
     if email_list:
         for dic in email_list:
@@ -140,31 +102,7 @@ def print_passwd(count, password):
             f'{col.GREEN}Your password {col.WARNING}{password}{col.GREEN} has not been compromised yet!{col.ENDC}')
 
 
-def get_proxy_list():
-    try:
-        print(f"{col.FAIL}The proxy is not yet implemented")
-        sys.exit()
-        proxy_list = []
-        header = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.105 Safari/537.36',
-            'Accept-Language': 'en-US,en;q=0.5'}
-        s = requests.Session()
-        s.headers.update(header)
-        web = s.get("https://hidemy.name/es/proxy-list/?maxtime=800&type=s#list")
-        soup = BeautifulSoup(web.content, 'html.parser')
-        table_data = soup.find_all('td')
-        ip_list = table_data[7::7]
-        port_list = table_data[8::7]
-        for i in range(len(ip_list)):
-            proxy = ip_list[i].string + ':' + port_list[i].string
-            proxy_list.append(proxy)
-        return proxy_list
-    except:
-        print("The proxy failed!")
-        sys.exit()
-
-
-def check_firefox(email_in, proxy_list=[], hidden=0):
+def check_firefox(email_in, hidden=0):
     regex = '^[a-z0-9.]+[\._]?[a-z0-9]+[@]\w+[.]\w{2,3}$'
     email = re.match(regex, email_in)
     if email:
@@ -172,22 +110,14 @@ def check_firefox(email_in, proxy_list=[], hidden=0):
         url = 'https://monitor.firefox.com'
         s = requests.Session()
         try:
-            if hidden:
-                if len(proxy_list) == 1:
-                    proxy_index = 0
-                else:
-                    proxy_index = random.randint(0, len(proxy_list) - 1)
-                proxy = {"http": proxy_list[proxy_index], "https": proxy_list[proxy_index]}
-            else:
-                proxy = ''
-            r = s.get(url, timeout=12, proxies=proxy)
+            r = s.get(url, timeout=12)
             if r.status_code != 200:
                 raise Exception(f'Service is down, error {r.status_code}; Check the service')
             soup = BeautifulSoup(r.text, "html.parser")
             csrf = soup.find('input', {'name': '_csrf'})['value']
             email_hash = sha1_hash(email)
             data = {"_csrf": csrf, "pageToken": "", "scannedEmailId": 2, "email": "", "emailHash": email_hash}
-            firefox_leaks = s.post(url + "/scan", data, timeout=12, proxies=proxy)
+            firefox_leaks = s.post(url + "/scan", data, timeout=12)
             if firefox_leaks.status_code != 200:
                 raise Exception(f'Service is down, error {r.status_code}; Check the service')
             soup1 = BeautifulSoup(firefox_leaks.text, "html.parser")
@@ -201,15 +131,10 @@ def check_firefox(email_in, proxy_list=[], hidden=0):
             return print_firefox_leaks(clean_breaches, email)
 
         except:
-            if hidden:
-                # print(proxy_list)
-                proxy_list.pop(proxy_index)
-                check_firefox(email, proxy_list, hidden)
-            else:
-                print(f"{col.FAIL}Too many request to firefox from that IP Address try using a proxy or VPN")
+            print(f"{col.FAIL}Too many request to firefox from that IP Address try using a proxy or VPN")
 
     else:
-        print("Database breach by name are only available for complete email search. Try again with the full email"
+        print("Database breach by name in firefox records is only available for complete email search. Try again with the full email"
               "ex:username@domain.xyz")
 
 
@@ -221,6 +146,39 @@ def print_firefox_leaks(clean_breaches, email):
         for i in range(int(len(clean_breaches) / 5)):
             print(
                 f"\t{col.MAGENTA}{clean_breaches[5 * i]}{col.ENDC}. The {clean_breaches[5 * i + 1]} on {col.BLUE}{clean_breaches[5 * i + 2]}{col.ENDC} the {clean_breaches[5 * i + 3]}  {col.YELLOW}{clean_breaches[5 * i + 4]}")
+
+
+def print_pass_leaks(email_list, email_base):
+    if email_list:
+        for dic in email_list:
+            password = dic['fields'].get("password", "NoPass")
+            hash_pass = dic['fields'].get("passhash", "NoHash")
+            domain = dic['fields'].get("domain", "NoDomain")
+            print(f'The email {col.WARNING}[+]->> {col.RED}{dic["fields"]["email"]}{col.ENDC} has been leaked')
+            if password != "NoPass":
+                print(f"\tpassword {col.WARNING}[+]--> {col.RED}{password}{col.ENDC}")
+            if hash_pass != "NoHash":
+                print(f"\tThere is a {col.WARNING}hash leaked: {col.RED}{hash_pass}{col.ENDC}")
+            if domain != "NoDomain":
+                print(f"\tThis leak was part of the: {col.MAGENTA}{domain}{col.ENDC}\n\n")
+    else:
+        print(
+            f"The email {col.WARNING}[+]->> {col.GREEN}{email_base}{col.ENDC} {col.CYAN}Doesn\'t have any cleartext "
+            f"passwords found!{col.ENDC}\n")
+
+
+def pass_leaks(email):
+    regex = '^[a-z0-9.]+[\._]?[a-z0-9]+[@]\w+[.]\w{2,3}$'
+    url = 'https://scylla.sh/search?q='
+    header = {'Accept': 'application/json'}
+    full_mail = re.match(regex, email)
+    if not full_mail:
+        full_mail = email + "*"
+    else:
+        full_mail=full_mail.group(0)
+    r = requests.get(url + "email:" + full_mail, headers=header)
+    data = r.json()
+    return print_pass_leaks(data, email)
 
 
 def main():
@@ -246,18 +204,11 @@ def main():
     parser.add_argument("-e", "--email", nargs='+', type=str, dest='emails',
                         help="Insert the emails to check separated by space."
                              " It can check just the username, the complete email or your domain with @domain.xyz")
-    parser.add_argument('-P', '--proxy', action='store_true',
-                        help="When set tries some free proxies to avoid limitations")
     args = parser.parse_args()
 
     if len(sys.argv) == 1:
         parser.print_help()
         sys.exit(1)
-
-    if args.proxy:
-        proxy_list = get_proxy_list()
-    else:
-        proxy_list = []
 
     if type(args.passwords) == list:
         for password in args.passwords:
@@ -268,14 +219,15 @@ def main():
 
     if type(args.emails) == list:
         for email in args.emails:
-            check_firefox(email, proxy_list, args.proxy)
-            email_tor_check(email)
+            pass_leaks(email)
+            check_firefox(email)
 
     elif args.emails:
-        check_firefox(args.emails, proxy_list, args.proxy)
-        email_tor_check(args.emails)
+        pass_leaks(args.emails)
+        check_firefox(args.emails)
 
 
 if __name__ == '__main__':
     clean()
     sys.exit(main())
+
