@@ -173,7 +173,10 @@ def pass_leaks(email):
     header = {'Accept': 'application/json'}
     full_mail = re.match(regex, email)
     if not full_mail:
-        full_mail = email + "*"
+        if not '@' in email:
+            full_mail = email + "*"
+        else:
+            full_mail = email
     else:
         full_mail=full_mail.group(0)
     r = requests.get(url + "email:" + full_mail, headers=header)
