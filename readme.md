@@ -33,3 +33,5 @@ It accepts one or more emails using the parameter -e or --email.
 - Check the complete email:
 ``python3 PasswdPwn.py -e username@domain.xyz``
 
+### Buy me a Coffee
+<a href="https://www.buymeacoffee.com/Ambrotd" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy Me A Coffee" style="height: 51px !important;width: 217px !important;" ></a>
